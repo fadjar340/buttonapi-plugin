@@ -3,109 +3,68 @@
     "title": "@@apiProgress.title@@",
     "properties": [
         {
-            "name": "dynamicPostUrl",
-            "label": "@@apiProgress.dynamicPostUrl@@",
-            "type": "checkbox",
-            "options": [
-                {
-                    "value": "true",
-                    "label": "@@apiProgress.dynamicPostUrl.enable@@"
-                }
-            ],
-            "description": "@@apiProgress.dynamicPostUrl.desc@@"
-        },
-        {
-            "name": "postUrl",
-            "label": "@@apiProgress.postUrl@@",
+            "name": "baseUrl",
+            "label": "@@apiProgress.baseUrl@@",
             "type": "textfield",
-            "description": "@@apiProgress.postUrl.desc@@",
-            "validation_message": "@@apiProgress.postUrl.validation@@",
-            "depends": ["dynamicPostUrl!=true"]
+            "required": "true",
+            "description": "@@apiProgress.baseUrl.desc@@"
         },
         {
             "name": "postUrlFieldId",
             "label": "@@apiProgress.postUrlFieldId@@",
             "type": "textfield",
+            "required": "true",
             "description": "@@apiProgress.postUrlFieldId.desc@@",
-            "depends": ["dynamicPostUrl=true"],
-            "options_callback": "FormBuilder.getFieldOptions"
+            "validation_message": "@@apiProgress.postUrlFieldId.validation@@"
         },
-          {
-              "name": "progressMethod",
-              "label": "@@apiProgress.progressMethod@@",
-              "type": "textfield",
-              "value": "GET",
-              "description": "@@apiProgress.progressMethod.desc@@",
-              "validation_message": "@@apiProgress.progressMethod.validation@@"
-          },
-          {
-              "name": "progressUrl",
-              "label": "@@apiProgress.progressUrl@@",
-              "type": "textfield",
-              "required": "true",
-              "description": "@@apiProgress.progressUrl.desc@@",
-              "validation_message": "@@apiProgress.progressUrl.validation@@"
-          }
-      ]
-  },
-  {
-      "title": "@@apiProgress.advancedOptions@@",
-      "properties": [
-          {
-              "label": "@@apiProgress.apiConfiguration@@",
-              "type": "header"
-          },
-          {
-              "name": "processIdField",
-              "label": "@@apiProgress.processIdField@@",
-              "type": "textfield",
-              "required": "true",
-              "description": "@@apiProgress.processIdField.desc@@",
-              "validation_message": "@@apiProgress.processIdField.validation@@"
-          },
-          {
-              "name": "progressFields",
-              "label": "@@apiProgress.progressField@@",
-              "type": "textfield",
-              "required": "true",
-              "description": "@@apiProgress.progressField.desc@@",
-              "validation_message": "@@apiProgress.progressField.validation@@"
-          },
-          {
-              "name": "statusField",
-              "label": "@@apiProgress.statusField@@",
-              "type": "textfield",
-              "required": "true",
-              "description": "@@apiProgress.statusField.desc@@",
-              "validation_message": "@@apiProgress.statusField.validation@@"
-          },
-          {
+        {
+             "name": "progressMethod",
+             "label": "@@apiProgress.progressMethod@@",
+             "type": "textfield",
+             "value": "GET",
+             "description": "@@apiProgress.progressMethod.desc@@",
+             "validation_message": "@@apiProgress.progressMethod.validation@@"
+         },
+         {
+             "name": "progressUrlFieldId",
+             "label": "@@apiProgress.progressUrlFieldId@@",
+             "type": "textfield",
+             "required": "true",
+             "description": "@@apiProgress.progressUrlFieldId.desc@@",
+             "validation_message": "@@apiProgress.progressUrlFieldId.validation@@"
+        },
+        {
             "name": "urlHeaders",
-            "label": "@@apiProgress.urlHeaders@@",
-            "type": "textarea",
-            "description": "@@apiProgress.urlHeaders.desc@@\nExample:\nContent-Type: application/json\nAuthorization: Bearer your_token",
-            "validation_message": "@@apiProgress.urlHeaders.validation@@"
+             "label": "@@apiProgress.urlHeaders@@",
+             "type": "textarea",
+             "required": "true",
+             "description": "@@apiProgress.urlHeaders.desc@@\nExample:\nAuthorization: Bearer your_token",
+             "validation_message": "@@apiProgress.urlHeaders.validation@@"
         },
-          {
-              "label": "@@apiProgress.behaviorSettings@@",
-              "type": "header"
-          },
-          {
-              "name": "pollInterval",
-              "label": "@@apiProgress.pollInterval@@",
-              "type": "textfield",
-              "value": "5000",
-              "description": "@@apiProgress.pollInterval.desc@@",
-              "validation_message": "@@apiProgress.pollInterval.validation@@"
-          },
-          {
-              "name": "timeout",
-              "label": "@@apiProgress.timeout@@",
-              "type": "textfield",
-              "value": "60000",
-              "description": "@@apiProgress.timeout.desc@@",
-              "validation_message": "@@apiProgress.timeout.validation@@"
-          }
+        {
+             "name": "resultField",
+             "label": "@@apiProgress.resultField@@",
+             "type": "textfield",
+             "required": "true",
+             "description": "@@apiProgress.resultField.desc@@",
+             "validation_message": "@@apiProgress.resultField.validation@@"
+         },
+         {
+             "name": "inProgressField",
+             "label": "@@apiProgress.inProgressField@@",
+             "type": "textfield",
+             "required": "true",
+             "description": "@@apiProgress.inProgressField.desc@@",
+             "validation_message": "@@apiProgress.inProgressField.validation@@"
+         },
+         {
+            "name": "pollInterval",
+            "label": "@@apiProgress.pollInterval@@",
+            "type": "textfield",
+            "value": "5000",
+            "description": "@@apiProgress.pollInterval.desc@@",
+            "validation_message": "@@apiProgress.pollInterval.validation@@"
+        }
       ]
-  }
+    }
 ]
