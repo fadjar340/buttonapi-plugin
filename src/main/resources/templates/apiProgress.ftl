@@ -1,6 +1,27 @@
 <div class="form-cell">
     <style>
-        /* [Keep your existing styles unchanged] */
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .status-text {
+            margin-top: 8px;
+            font-size: 14px;
+            padding: 5px;
+            border-radius: 4px;
+        }
+        .status-processing {
+            color: #31708f;
+            background-color: #d9edf7;
+        }
+        .status-error {
+            color: #a94442;
+            background-color: #f2dede;
+        }
+        .status-success {
+            color: #3c763d;
+            background-color: #dff0d8;
+        }
     </style>
 
     <div class="api-progress-plugin" id="${elementId}">
