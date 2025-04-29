@@ -1,161 +1,141 @@
 <div class="form-cell">
     <style>
-        .progress-container {
-            margin-top: 20px;
-            display: none;
-        }
-        .status-text {
-            margin-top: 8px;
-            font-size: 14px;
-            padding: 5px;
+        .api-progress-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
             border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
         }
-        .status-processing {
-            color: #31708f;
-            background-color: #d9edf7;
+
+        .api-progress-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
-        .status-error {
-            color: #a94442;
-            background-color: #f2dede;
-        }
-        .status-success {
-            color: #3c763d;
-            background-color: #dff0d8;
+
+        .api-progress-status {
+            margin-top: 10px;
+            font-weight: bold;
+            font-size: 14px;
         }
     </style>
 
-    <div class="api-progress-plugin" id="${elementId}">
-        <button type="button" class="btn btn-primary">
-            Start Process
+    <div id="api-progress-container">
+        <button type="button" id="api-progress-startButton" class="api-progress-button">
+            ${buttonLabel!"Start Process"}
         </button>
-        
-        <div class="progress-container">
-            <div class="progress-bar-outer">
-                <div class="progress-bar"></div>
-            </div>
-            <div class="status-text"></div>
+        <div class="api-progress-status">
+            Status: <span id="api-progress-statusText">Not Started</span>
         </div>
     </div>
 
-    <script type="text/javascript">
-    (function() {
-        // Configuration - unchanged from your original
-        var elementId = "${elementId}";
-        var postUrlFieldId = "${postUrlFieldId}";
-        var progressUrlFieldId = "${progressUrlFieldId}";
-        var progressMethod = "${progressMethod}";
-        var inProgressField = "${inProgressField}";
-        var resultField = "${resultField}";
-        var headers = ${urlHeaders!"[]"};
-        var pollInterval = parseInt("${pollInterval!5000}");
+    <script>
+    (function(){
+        var baseUrl = "${baseUrl}";
+        var authorizationHeader = "${authorizationHeader}";
+        var timeout = parseInt("${timeout!30}");
+        var resultField = "${resultField!"result"}";
+        var progressField = "${progressField!"inProgress"}";
+        var postUrlFieldId = "${postUrl}";
+        var progressUrlFieldId = "${progressUrl}";
+        var startButtonId = "api-progress-startButton";
+        var statusTextId = "api-progress-statusText";
+        var progressInterval = null;
 
-        // DOM Elements - unchanged
-        var container = document.getElementById(elementId);
-        if (!container) return;
+        document.getElementById(startButtonId).addEventListener("click", function() {
+            var postField = document.querySelector('[name="' + postUrlFieldId + '"]');
+            var postUrl = postField ? postField.value : "";
 
-        var button = container.querySelector("button");
-        var progressContainer = container.querySelector(".progress-container");
-        var statusText = container.querySelector(".status-text");
+            var progressFieldEl = document.querySelector('[name="' + progressUrlFieldId + '"]');
+            var progressUrl = progressFieldEl ? progressFieldEl.value : "";
 
-        // Helper Functions - only minor safety improvements
-        function setStatus(message, type) {
-            statusText.textContent = message;
-            statusText.className = "status-text status-" + type;
-        }
-
-        function handleError(message) {
-            button.disabled = false;
-            setStatus(message, "error");
-            console.error(message);
-        }
-
-        function getJsonValue(obj, path) {
-            try {
-                return path.split('.').reduce(function(o, k) {
-                    return (o || {})[k];
-                }, obj);
-            } catch (e) {
-                console.error("JSON path error:", e);
-                return null;
-            }
-        }
-
-        // MAIN CHANGE: Improved request handling with CORS support
-        function makeRequest(url, method, callback) {
-            button.disabled = true;
-            progressContainer.style.display = "block";
-            setStatus(method === "POST" ? "Starting process..." : "Checking progress...", "processing");
-
-            // Convert headers array to object
-            var headersObj = {};
-            headers.forEach(function(header) {
-                if (header.key && header.value) {
-                    headersObj[header.key] = header.value;
-                }
-            });
-
-            // Add CORS headers
-            headersObj['X-Requested-With'] = 'XMLHttpRequest';
-            
-            fetch(url, {
-                method: method,
-                headers: headersObj,
-                credentials: 'include' // Important for CORS with auth
-            })
-            .then(function(response) {
-                if (!response.ok) throw new Error(response.statusText);
-                return response.json();
-            })
-            .then(function(data) {
-                callback(null, data);
-            })
-            .catch(function(error) {
-                callback(error);
-            });
-        }
-
-        // Event Listeners - simplified
-        button.addEventListener("click", function() {
-            var postUrl = document.querySelector('[name="' + postUrlFieldId + '"]').value;
-            if (!postUrl) {
-                handleError("POST URL is required");
+            if (!postUrl || !progressUrl) {
+                alert("Missing Jenkins URLs from form fields.");
                 return;
             }
 
-            makeRequest(postUrl, "POST", function(error, data) {
-                if (error) {
-                    handleError("Failed to start: " + error.message);
-                } else {
-                    setTimeout(pollProgress, pollInterval);
+            document.getElementById(statusTextId).innerText = "Fetching Crumb...";
+            document.getElementById(startButtonId).disabled = true;
+
+            fetch(baseUrl + "/crumbIssuer/api/json", {
+                method: "GET",
+                headers: {
+                    "Authorization": authorizationHeader
                 }
+            }).then(function(response) {
+                if (!response.ok) throw new Error("Failed to fetch crumb");
+                return response.json();
+            }).then(function(crumbData) {
+                var crumbField = crumbData.crumbRequestField;
+                var crumbValue = crumbData.crumb;
+
+                var headers = {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "Authorization": authorizationHeader
+                };
+                headers[crumbField] = crumbValue;
+
+                document.getElementById(statusTextId).innerText = "Triggering Build...";
+
+                return fetch(postUrl, {
+                    method: "POST",
+                    headers: headers
+                });
+            }).then(function(response) {
+                if (!response.ok) throw new Error("Failed to trigger build");
+                document.getElementById(statusTextId).innerText = "Build triggered. Monitoring progress...";
+                progressInterval = setInterval(function() {
+                    checkProgress(progressUrl, 0);
+                }, timeout * 1000);
+            }).catch(function(error) {
+                document.getElementById(statusTextId).innerText = "Error: " + error.message;
+                document.getElementById(startButtonId).disabled = false;
             });
         });
 
-        function pollProgress() {
-            var progressUrl = document.querySelector('[name="' + progressUrlFieldId + '"]').value;
-            if (!progressUrl) {
-                handleError("Progress URL is required");
-                return;
-            }
+        function checkProgress(progressUrl, retryCount) {
+            fetch(progressUrl, {
+                method: "GET",
+                headers: {
+                    "Authorization": authorizationHeader
+                }
+            }).then(function(response) {
+                if (!response.ok) throw new Error("Failed to fetch progress");
+                return response.json();
+            }).then(function(data) {
+                var inProgress = data[progressField];
+                var result = data[resultField];
 
-            makeRequest(progressUrl, "GET", function(error, data) {
-                if (error) {
-                    handleError("Progress check failed: " + error.message);
+                if (inProgress) {
+                    document.getElementById(statusTextId).innerText = "Build is running...";
                 } else {
-                    var isInProgress = getJsonValue(data, inProgressField);
-                    var result = getJsonValue(data, resultField);
+                    if (!result && retryCount < 3) {
+                        document.getElementById(statusTextId).innerText = "Waiting for result...";
+                        setTimeout(function() {
+                            checkProgress(progressUrl, retryCount + 1);
+                        }, 1000);
+                        return;
+                    }
 
-                    if (isInProgress) {
-                        setTimeout(pollProgress, pollInterval);
+                    clearInterval(progressInterval);
+                    document.getElementById(startButtonId).disabled = false;
+
+                    if (result === "SUCCESS") {
+                        document.getElementById(statusTextId).innerText = "✅ Build completed successfully!";
+                    } else if (result === "FAILURE") {
+                        document.getElementById(statusTextId).innerText = "❌ Build failed.";
                     } else {
-                        button.disabled = false;
-                        setStatus("Result: " + result, result === "SUCCESS" ? "success" : "error");
+                        document.getElementById(statusTextId).innerText = "⚠️ Build finished with status: " + result;
                     }
                 }
+            }).catch(function(error) {
+                clearInterval(progressInterval);
+                document.getElementById(statusTextId).innerText = "Progress Error: " + error.message;
+                document.getElementById(startButtonId).disabled = false;
             });
         }
-
-        // [Keep your existing toggleHelp function if needed]
     })();
     </script>
 </div>

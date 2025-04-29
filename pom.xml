@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.joget.plugin</groupId>
+    <groupId>org.joget.plugin.custom</groupId>
     <artifactId>buttonapi-plugin</artifactId>
     <packaging>bundle</packaging>
     <version>8.1.12</version>
     <name>buttonapi-plugin</name>
     <url>http://www.joget.org</url>
+
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.0.2</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>11</source>
                     <target>11</target>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
@@ -30,11 +35,11 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <extensions>true</extensions>
                 <version>5.1.8</version>
-                <configuration>
+                 <configuration>
                     <instructions>
                         <Export-Package></Export-Package>
                         <Private-Package>{local-packages}</Private-Package>
-                        <Bundle-Activator>org.joget.plugin.Activator</Bundle-Activator>
+                        <Bundle-Activator>org.joget.plugin.custom.Activator</Bundle-Activator>
                         <Import-Package>
                             org.joget.report.dao,
                             org.joget.report.model,
@@ -81,6 +86,7 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -92,18 +98,19 @@
             <groupId>org.joget</groupId>
             <artifactId>wflow-core</artifactId>
             <version>8.1.12</version>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>javax.servlet</groupId>
                     <artifactId>javax.servlet-api</artifactId>
                 </exclusion>
             </exclusions>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>jsp-api</artifactId>
             <version>2.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.json</groupId>
@@ -111,6 +118,7 @@
             <version>20231013</version>
         </dependency>
     </dependencies>
+
     <distributionManagement>
         <repository>
             <id>internal</id>
@@ -121,4 +129,5 @@
             <url>https://dev.joget.org/archiva/repository/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
 </project>

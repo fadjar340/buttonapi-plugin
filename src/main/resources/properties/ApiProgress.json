@@ -1,70 +1,65 @@
 [
-  {
-    "title": "@@apiProgress.title@@",
-    "properties": [
+    {
+      "title": "Button API Tool Properties",
+      "properties": [
         {
-            "name": "baseUrl",
-            "label": "@@apiProgress.baseUrl@@",
-            "type": "textfield",
-            "required": "true",
-            "description": "@@apiProgress.baseUrl.desc@@"
+          "name": "buttonLabel",
+          "label": "Button Label",
+          "type": "textfield",
+          "value": "Start Build",
+          "required": "true",
+          "description": "Text shown on the button"
         },
         {
-            "name": "postUrlFieldId",
-            "label": "@@apiProgress.postUrlFieldId@@",
-            "type": "textfield",
-            "required": "true",
-            "description": "@@apiProgress.postUrlFieldId.desc@@",
-            "validation_message": "@@apiProgress.postUrlFieldId.validation@@"
+          "name": "baseUrl",
+          "label": "Jenkins Base URL",
+          "type": "textfield",
+          "required": "true",
+          "description": "e.g. https://jenkins.example.com"
         },
         {
-             "name": "progressMethod",
-             "label": "@@apiProgress.progressMethod@@",
-             "type": "textfield",
-             "value": "GET",
-             "description": "@@apiProgress.progressMethod.desc@@",
-             "validation_message": "@@apiProgress.progressMethod.validation@@"
-         },
-         {
-             "name": "progressUrlFieldId",
-             "label": "@@apiProgress.progressUrlFieldId@@",
-             "type": "textfield",
-             "required": "true",
-             "description": "@@apiProgress.progressUrlFieldId.desc@@",
-             "validation_message": "@@apiProgress.progressUrlFieldId.validation@@"
+          "name": "postUrl",
+          "label": "Build Trigger FieldID",
+          "type": "textfield",
+          "required": "true",
+          "description": "Form fieldID to request for build trigger"
         },
         {
-            "name": "urlHeaders",
-             "label": "@@apiProgress.urlHeaders@@",
-             "type": "textarea",
-             "required": "true",
-             "description": "@@apiProgress.urlHeaders.desc@@\nExample:\nAuthorization: Bearer your_token",
-             "validation_message": "@@apiProgress.urlHeaders.validation@@"
+          "name": "progressUrl",
+          "label": "Progress Monitor FieldID",
+          "type": "textfield",
+          "required": "true",
+          "description": "form fieldID to monitor progress"
         },
         {
-             "name": "resultField",
-             "label": "@@apiProgress.resultField@@",
-             "type": "textfield",
-             "required": "true",
-             "description": "@@apiProgress.resultField.desc@@",
-             "validation_message": "@@apiProgress.resultField.validation@@"
-         },
-         {
-             "name": "inProgressField",
-             "label": "@@apiProgress.inProgressField@@",
-             "type": "textfield",
-             "required": "true",
-             "description": "@@apiProgress.inProgressField.desc@@",
-             "validation_message": "@@apiProgress.inProgressField.validation@@"
-         },
-         {
-            "name": "pollInterval",
-            "label": "@@apiProgress.pollInterval@@",
-            "type": "textfield",
-            "value": "5000",
-            "description": "@@apiProgress.pollInterval.desc@@",
-            "validation_message": "@@apiProgress.pollInterval.validation@@"
+          "name": "authorizationHeader",
+          "label": "Authorization Header",
+          "type": "textfield",
+          "required": "true",
+          "description": "e.g. Basic abc123"
+        },
+        {
+          "name": "resultField",
+          "label": "Result Field",
+          "type": "textfield",
+          "value": "result",
+          "description": "Field in JSON for result (e.g. result)"
+        },
+        {
+          "name": "progressField",
+          "label": "Progress Field",
+          "type": "textfield",
+          "value": "inProgress",
+          "description": "Field in JSON to check if build is still running"
+        },
+        {
+          "name": "timeout",
+          "label": "Polling Interval (sec)",
+          "type": "textfield",
+          "value": "5",
+          "description": "Polling interval in seconds"
         }
       ]
     }
-]
+  ]
+  
