@@ -1,0 +1,65 @@
+[
+    {
+      "title": "Button API Tool Properties",
+      "properties": [
+        {
+          "name": "buttonLabel",
+          "label": "Button Label",
+          "type": "textfield",
+          "value": "Start Build",
+          "required": "true",
+          "description": "Text shown on the button"
+        },
+        {
+          "name": "baseUrl",
+          "label": "Jenkins Base URL",
+          "type": "textfield",
+          "required": "true",
+          "description": "e.g. https://jenkins.example.com"
+        },
+        {
+          "name": "postUrl",
+          "label": "Build Trigger FieldID",
+          "type": "textfield",
+          "required": "true",
+          "description": "Form fieldID to request for build trigger"
+        },
+        {
+          "name": "progressUrl",
+          "label": "Progress Monitor FieldID",
+          "type": "textfield",
+          "required": "true",
+          "description": "form fieldID to monitor progress"
+        },
+        {
+          "name": "authorizationHeader",
+          "label": "Authorization Header",
+          "type": "textfield",
+          "required": "true",
+          "description": "e.g. Basic abc123"
+        },
+        {
+          "name": "resultField",
+          "label": "Result Field",
+          "type": "textfield",
+          "value": "result",
+          "description": "Field in JSON for result (e.g. result)"
+        },
+        {
+          "name": "progressField",
+          "label": "Progress Field",
+          "type": "textfield",
+          "value": "inProgress",
+          "description": "Field in JSON to check if build is still running"
+        },
+        {
+          "name": "timeout",
+          "label": "Polling Interval (sec)",
+          "type": "textfield",
+          "value": "5",
+          "description": "Polling interval in seconds"
+        }
+      ]
+    }
+  ]
+  
