@@ -1,141 +1,135 @@
 <div class="form-cell">
-    <style>
-        .api-progress-button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
+  <style>
+    .api-progress-button {
+      background-color: #1a73e8;
+      color: white;
+      font-size: 14px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .api-progress-button:hover {
+      background-color: #155cb0;
+      transform: translateY(-1px);
+    }
+    .api-progress-button:disabled {
+      background-color: #b0c4de;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+    .api-progress-status {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #444;
+    }
+    .api-progress-status span {
+      font-weight: bold;
+    }
+  </style>
+
+  <div>
+    <button id="api-progress-startButton" class="api-progress-button">
+      Start Process
+    </button>
+  </div>
+  <div class="api-progress-status">
+    Status: <span id="api-progress-statusText">Not Started</span>
+  </div>
+
+  <script>
+    (function () {
+      const pluginUrl      = "${pluginUrl}";
+      const postUrl        = "${postUrl!''}";
+      const progressUrl    = "${progressUrl!''}";
+      const baseUrl        = "${baseUrl!''}";
+      const timeout        = parseInt("${timeout!5}");
+      const resultField    = "${resultField!"result"}";
+      const progressField  = "${progressField!"inProgress"}";
+      const authHeader     = "${authorizationHeader!''}";
+
+      const btn = document.getElementById("api-progress-startButton");
+      const status = document.getElementById("api-progress-statusText");
+      let interval;
+
+      btn.addEventListener("click", function () {
+        if (!postUrl || !progressUrl || !baseUrl) {
+          alert("Jenkins URLs not configured properly.");
+          return;
         }
 
-        .api-progress-button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
+        btn.disabled = true;
+        status.innerText = "Requesting Crumb…";
 
-        .api-progress-status {
-            margin-top: 10px;
-            font-weight: bold;
-            font-size: 14px;
-        }
-    </style>
+        fetch(pluginUrl + "?action=crumb&baseUrl=" + encodeURIComponent(baseUrl), {
+          method: "GET",
+          headers: { "Authorization": authHeader },
+          credentials: "same-origin"
+        })
+        .then(r => {
+          if (!r.ok) throw new Error("Crumb fetch failed: " + r.status);
+          return r.json();
+        })
+        .then(json => {
+          const crumbField = json.crumbRequestField;
+          const crumbValue = json.crumb;
 
-    <div id="api-progress-container">
-        <button type="button" id="api-progress-startButton" class="api-progress-button">
-            ${buttonLabel!"Start Process"}
-        </button>
-        <div class="api-progress-status">
-            Status: <span id="api-progress-statusText">Not Started</span>
-        </div>
-    </div>
+          status.innerText = "Triggering Jenkins job…";
 
-    <script>
-    (function(){
-        var baseUrl = "${baseUrl}";
-        var authorizationHeader = "${authorizationHeader}";
-        var timeout = parseInt("${timeout!30}");
-        var resultField = "${resultField!"result"}";
-        var progressField = "${progressField!"inProgress"}";
-        var postUrlFieldId = "${postUrl}";
-        var progressUrlFieldId = "${progressUrl}";
-        var startButtonId = "api-progress-startButton";
-        var statusTextId = "api-progress-statusText";
-        var progressInterval = null;
+          const params = new URLSearchParams();
+          params.append("action", "trigger");
+          params.append("crumbField", crumbField);
+          params.append("crumbValue", crumbValue);
+          params.append("postUrl", postUrl);
+          params.append("baseUrl", baseUrl);
 
-        document.getElementById(startButtonId).addEventListener("click", function() {
-            var postField = document.querySelector('[name="' + postUrlFieldId + '"]');
-            var postUrl = postField ? postField.value : "";
+          return fetch(pluginUrl, {
+            method: "POST",
+            headers: {
+              "Authorization": authHeader,
+              "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: params.toString(),
+            credentials: "same-origin"
+          });
+        })
+        .then(r => {
+          if (!r.ok) throw new Error("Trigger failed: " + r.status);
+          status.innerText = "Build triggered. Monitoring…";
 
-            var progressFieldEl = document.querySelector('[name="' + progressUrlFieldId + '"]');
-            var progressUrl = progressFieldEl ? progressFieldEl.value : "";
-
-            if (!postUrl || !progressUrl) {
-                alert("Missing Jenkins URLs from form fields.");
-                return;
-            }
-
-            document.getElementById(statusTextId).innerText = "Fetching Crumb...";
-            document.getElementById(startButtonId).disabled = true;
-
-            fetch(baseUrl + "/crumbIssuer/api/json", {
-                method: "GET",
-                headers: {
-                    "Authorization": authorizationHeader
-                }
-            }).then(function(response) {
-                if (!response.ok) throw new Error("Failed to fetch crumb");
-                return response.json();
-            }).then(function(crumbData) {
-                var crumbField = crumbData.crumbRequestField;
-                var crumbValue = crumbData.crumb;
-
-                var headers = {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                    "Authorization": authorizationHeader
-                };
-                headers[crumbField] = crumbValue;
-
-                document.getElementById(statusTextId).innerText = "Triggering Build...";
-
-                return fetch(postUrl, {
-                    method: "POST",
-                    headers: headers
-                });
-            }).then(function(response) {
-                if (!response.ok) throw new Error("Failed to trigger build");
-                document.getElementById(statusTextId).innerText = "Build triggered. Monitoring progress...";
-                progressInterval = setInterval(function() {
-                    checkProgress(progressUrl, 0);
-                }, timeout * 1000);
-            }).catch(function(error) {
-                document.getElementById(statusTextId).innerText = "Error: " + error.message;
-                document.getElementById(startButtonId).disabled = false;
+          interval = setInterval(() => {
+            fetch(pluginUrl + "?action=progress&progressUrl=" + encodeURIComponent(progressUrl), {
+              method: "GET",
+              headers: { "Authorization": authHeader },
+              credentials: "same-origin"
+            })
+            .then(r => r.json())
+            .then(data => {
+              if (data[progressField]) {
+                status.innerText = "Building…";
+              } else {
+                clearInterval(interval);
+                btn.disabled = false;
+                const result = data[resultField];
+                status.innerText = result === "SUCCESS" ? "✅ Completed"
+                                 : result === "FAILURE" ? "❌ Failed"
+                                 : "⚠️ Status: " + result;
+              }
+            })
+            .catch(e => {
+              clearInterval(interval);
+              btn.disabled = false;
+              status.innerText = "Progress error: " + e.message;
             });
+          }, timeout * 1000);
+        })
+        .catch(e => {
+          btn.disabled = false;
+          status.innerText = "Error: " + e.message;
         });
-
-        function checkProgress(progressUrl, retryCount) {
-            fetch(progressUrl, {
-                method: "GET",
-                headers: {
-                    "Authorization": authorizationHeader
-                }
-            }).then(function(response) {
-                if (!response.ok) throw new Error("Failed to fetch progress");
-                return response.json();
-            }).then(function(data) {
-                var inProgress = data[progressField];
-                var result = data[resultField];
-
-                if (inProgress) {
-                    document.getElementById(statusTextId).innerText = "Build is running...";
-                } else {
-                    if (!result && retryCount < 3) {
-                        document.getElementById(statusTextId).innerText = "Waiting for result...";
-                        setTimeout(function() {
-                            checkProgress(progressUrl, retryCount + 1);
-                        }, 1000);
-                        return;
-                    }
-
-                    clearInterval(progressInterval);
-                    document.getElementById(startButtonId).disabled = false;
-
-                    if (result === "SUCCESS") {
-                        document.getElementById(statusTextId).innerText = "✅ Build completed successfully!";
-                    } else if (result === "FAILURE") {
-                        document.getElementById(statusTextId).innerText = "❌ Build failed.";
-                    } else {
-                        document.getElementById(statusTextId).innerText = "⚠️ Build finished with status: " + result;
-                    }
-                }
-            }).catch(function(error) {
-                clearInterval(progressInterval);
-                document.getElementById(statusTextId).innerText = "Progress Error: " + error.message;
-                document.getElementById(startButtonId).disabled = false;
-            });
-        }
+      });
     })();
-    </script>
+  </script>
 </div>
